@@ -38,7 +38,7 @@ export function createTokenAuthMiddleware(options: AuthTokenMiddlewareOptions = 
         return
       }
 
-      const token = authorization?.slice(7);
+      const token = authorization.slice(7);
 
       // verify token
       const v = verify(token, ACCESS_SECRET);
@@ -47,9 +47,16 @@ export function createTokenAuthMiddleware(options: AuthTokenMiddlewareOptions = 
       const { id, username, permissions }: AccessTokenPayload = v;
       const { roles, denyRoles } = options;
 
+      if (!id || !username || !permissions) {
+        res.status(401).send({
+          error: 'Missing token parameters',
+        });
+        return
+      }
+
       if (roles) {
         // @ts-ignore: roles will have length 1+
-        if (roles.length && !permissions?.includes(...roles)) {
+        if (roles.length && !permissions.includes(...roles)) {
           res.status(401).send({
             error: 'Incorrect Permissions'
           });
@@ -60,7 +67,7 @@ export function createTokenAuthMiddleware(options: AuthTokenMiddlewareOptions = 
 
       if (denyRoles) {
         // @ts-ignore: denyRoles will have length 1+
-        if (denyRoles.length && permissions?.includes(...denyRoles)) {
+        if (denyRoles.length && permissions.includes(...denyRoles)) {
           res.status(401).send({
             error: 'Incorrect Permissions'
           });

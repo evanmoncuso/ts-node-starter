@@ -1,11 +1,12 @@
 {
   "name": "@evanmoncuso/token-auth-middleware",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "A Typescript starter pack for node projects",
-  "main": "dist/index.js",
   "author": "Evan Moncuso",
   "license": "MIT",
-  "types": "dist/index.d.ts",
+  "files": [ "lib/**/*" ],
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
   "keywords": [
     "express",
     "middleware",
@@ -14,7 +15,8 @@
   ],
   "scripts": {
     "build": "tsc",
-    "prepublish": "yarn test && yarn build",
+    "prepublishOnly": "yarn test",
+    "prepare": "yarn build",
     "test": "yarn run test:lint && yarn run test:jest",
     "test:jest": "jest",
     "test:lint": "tslint -c tslint.json 'src/**/*.ts'"

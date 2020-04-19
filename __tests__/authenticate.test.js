@@ -1,4 +1,4 @@
-import { createTokenAuthMiddleware } from '../dist/authenticate';
+import { createTokenAuthMiddleware } from '../lib/authenticate';
 import { sign } from 'jsonwebtoken';
 
 const TESTING_SECRET = 'testing-secret'
