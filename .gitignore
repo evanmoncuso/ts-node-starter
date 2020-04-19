@@ -3,8 +3,5 @@ node_modules
 dist
 yarn-error.log
 
-# runtime
-.private
-
 # misc
 .DS_Store
