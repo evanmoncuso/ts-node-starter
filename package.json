@@ -1,10 +1,12 @@
 {
   "name": "@evanmoncuso/token-auth-middleware",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "A Typescript starter pack for node projects",
   "author": "Evan Moncuso",
   "license": "MIT",
-  "files": [ "lib/**/*" ],
+  "files": [
+    "lib/**/*"
+  ],
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "keywords": [
@@ -19,7 +21,7 @@
     "prepare": "yarn build",
     "test": "yarn run test:lint && yarn run test:jest",
     "test:jest": "jest",
-    "test:lint": "tslint -c tslint.json 'src/**/*.ts'"
+    "test:lint": "eslint . --ext .js,.ts"
   },
   "dependencies": {
     "jsonwebtoken": "^8.5.1"
@@ -32,6 +34,10 @@
     "@types/jest": "^25.1.4",
     "@types/jsonwebtoken": "^8.3.9",
     "@types/node": "~13.9.0",
+    "@typescript-eslint/eslint-plugin": "^2.29.0",
+    "@typescript-eslint/parser": "^2.29.0",
+    "eslint": "^6.8.0",
+    "eslint-plugin-jest": "^23.8.2",
     "express": "^4.17.1",
     "jest": "^25.2.4",
     "tslint": "^6.1.0",

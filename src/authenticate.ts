@@ -3,14 +3,26 @@ import { verify } from 'jsonwebtoken';
 
 // TODO - add errors as exportables const
 
+interface KVStore<T> {
+  [ key: string ]: T;
+}
+
+function hasRoles(
+  permissions: string[], 
+  restrictions: KVStore<boolean>
+): boolean {
+  const c = permissions.filter((p) => restrictions[p]);
+  return !!c.length;
+}
+
 /**
  * @typedef AuthenticateTokenMiddlewareOptions
  * @type {object}
- * @property {string[]} roles - list of REQUIRED roles, if length 0, all roles are okay
+ * @property {string[]} allowRoles - list of REQUIRED roles, if length 0, all roles are okay. If there are multiple roles it will access anyone with ANY of the roles
  * @property {string[]} denyRoles - list of roles to deny access, if length 0, all roles are okay. Will override "roles"
  */
 interface AuthTokenMiddlewareOptions {
-  roles?: string[];
+  allowRoles?: string[];
   denyRoles?: string[];
 }
 
@@ -20,15 +32,27 @@ interface AuthTokenMiddlewareOptions {
  * @param {AuthenticateTokenMiddlewareOptions} - options - restrictions on allowed permissions
  */
 export function createTokenAuthMiddleware(options: AuthTokenMiddlewareOptions = {}) {
-  return (req: Request, res: Response, next: NextFunction) => {
+  const { allowRoles = [], denyRoles = [], } = options;
+
+  const allowedRolesMap = allowRoles.reduce((o: KVStore<boolean>, r: string): KVStore<boolean> => {
+    o[r] = true;
+    return o;
+  }, {});
+
+  const denyRolesMap = denyRoles.reduce((o: KVStore<boolean>, r: string): KVStore<boolean> => {
+    o[r] = true;
+    return o;
+  }, {});
+
+  return (req: Request , res: Response, next: NextFunction): void => {
     try {
       // this will exist as it's checked in the app's init
       const ACCESS_SECRET = process.env.ACCESS_TOKEN_SECRET || '';
-      const { authorization } = req.headers;
+      const { authorization, } = req.headers;
 
       if (!authorization) {
         res.status(401).send({
-          error: 'No Authorization Header present'
+          error: 'No Authorization Header present',
         });
         return
       } else if (authorization.slice(0, 7) !== 'Bearer ') {
@@ -44,35 +68,22 @@ export function createTokenAuthMiddleware(options: AuthTokenMiddlewareOptions = 
       const v = verify(token, ACCESS_SECRET);
       if (typeof v === 'string') throw new Error('Unabled to decode token');
 
-      const { id, username, permissions }: AccessTokenPayload = v;
-      const { roles, denyRoles } = options;
+      const { id, username, permissions, }: AccessTokenPayload = v;
 
       if (!id || !username || !permissions) {
-        res.status(401).send({
-          error: 'Missing token parameters',
-        });
+        res.status(401).send({ error: 'Missing token parameters', });
         return
       }
 
-      if (roles) {
-        // @ts-ignore: roles will have length 1+
-        if (roles.length && !permissions.includes(...roles)) {
-          res.status(401).send({
-            error: 'Incorrect Permissions'
-          });
-          return
-        }
+      // if user has one of the allowed permissions
+      if (allowRoles.length && !hasRoles(permissions, allowedRolesMap)) {
+        res.status(401).send({ error: 'Incorrect Permissions', });
+        return
       }
-
-
-      if (denyRoles) {
-        // @ts-ignore: denyRoles will have length 1+
-        if (denyRoles.length && permissions.includes(...denyRoles)) {
-          res.status(401).send({
-            error: 'Incorrect Permissions'
-          });
-          return
-        }
+      
+      if (denyRoles.length &&hasRoles(permissions, denyRolesMap)) {
+        res.status(401).send({ error: 'Incorrect Permissions', });
+        return
       }
 
       // only attach decoded values if everything is okay
@@ -86,7 +97,7 @@ export function createTokenAuthMiddleware(options: AuthTokenMiddlewareOptions = 
       next();
     } catch (e) {
       res.status(500).send({
-        error: e
+        error: e,
       })
     }
   }
@@ -95,5 +106,5 @@ export function createTokenAuthMiddleware(options: AuthTokenMiddlewareOptions = 
 export interface AccessTokenPayload {
   id?: string;
   username?: string;
-  permissions?: string[]
+  permissions?: string[];
 }

@@ -14,8 +14,8 @@ function createRequestMock(handlers) {
 // generate a fake res object
 function createResponseMock(handlers) {
   return {
-    status() {},
-    send() {},
+    status() { return this },
+    send() { return this },
     ...handlers,
   }
 }
@@ -30,7 +30,7 @@ function createNextMock(cb) {
 function generateWorkingToken(payload) {
   const token = sign(payload, TESTING_SECRET, {
     expiresIn: 1000,
-    issuer: 'testing'
+    issuer: 'testing',
   });
 
   return token
@@ -48,7 +48,7 @@ describe('Works on the happy path', () => {
 
   beforeEach(() => {
     jest.resetModules();
-    process.env = { ...ORIGINAL_ENV }
+    process.env = { ...ORIGINAL_ENV, }
     process.env.ACCESS_TOKEN_SECRET = TESTING_SECRET;
   });
 
@@ -56,16 +56,16 @@ describe('Works on the happy path', () => {
     process.env = ORIGINAL_ENV;
   });
 
-  test('Sometimes things are right as rain', (done) => {
+  test('Sometimes things are right as rain', () => {return new Promise((done) => {
     const t = generateWorkingToken({
       id: '1234',
       username: 'test-user',
-      permissions: [ 'TESTING' ],
+      permissions: [ 'TESTING', ],
     });
     
     const req = createRequestMock({
       headers: {
-        'authorization': `Bearer ${t}`
+        'authorization': `Bearer ${t}`,
       },
     });
     const res = createResponseMock({
@@ -83,12 +83,12 @@ describe('Works on the happy path', () => {
     expect(fn).toHaveBeenCalled();
     expect(res.locals.id).toBe('1234');
     expect(res.locals.username).toBe('test-user');
-    expect(res.locals.permissions).toEqual([ 'TESTING' ]);
+    expect(res.locals.permissions).toEqual([ 'TESTING', ]);
 
     expect(res.locals.x).toBe(1);
 
     done();
-  });
+  })});
 });
 
 describe('Does not allow unauthorized requests through', () => {
@@ -96,7 +96,7 @@ describe('Does not allow unauthorized requests through', () => {
 
   beforeEach(() => {
     jest.resetModules();
-    process.env = { ...ORIGINAL_ENV }
+    process.env = { ...ORIGINAL_ENV, }
     process.env.ACCESS_TOKEN_SECRET = TESTING_SECRET;
   });
 
@@ -104,7 +104,7 @@ describe('Does not allow unauthorized requests through', () => {
     process.env = ORIGINAL_ENV;
   });
 
-  test('Returns a 401 when no "Authorization" header is present', (done) => {
+  test('Returns a 401 when no "Authorization" header is present', () => {return new Promise((done) => {
     const req = createRequestMock();
     const res = createResponseMock({
       send(message) { 
@@ -114,7 +114,7 @@ describe('Does not allow unauthorized requests through', () => {
       status(statusCode) {
         expect(statusCode).toBe(401);
         return this;
-      }
+      },
     });
 
     const fn = jest.fn();
@@ -126,13 +126,13 @@ describe('Does not allow unauthorized requests through', () => {
     expect(fn).not.toHaveBeenCalled();
 
     done();
-  });
+  })});
 
-  test('Returns a 401 when "Authorization" header is not a Bearer', (done) => {
+  test('Returns a 401 when "Authorization" header is not a Bearer', () => {return new Promise((done) => {
     const req = createRequestMock({
       headers: {
-        'authorization': 'ham'
-      }
+        'authorization': 'ham',
+      },
     });
     const res = createResponseMock({
       send(message) {
@@ -142,7 +142,7 @@ describe('Does not allow unauthorized requests through', () => {
       status(statusCode) {
         expect(statusCode).toBe(401);
         return this;
-      }
+      },
     });
 
     const fn = jest.fn();
@@ -154,14 +154,14 @@ describe('Does not allow unauthorized requests through', () => {
     expect(fn).not.toHaveBeenCalled();
 
     done();
-  });
+  })});
 
-  test('Returns a 401 when "Authorization" header is not a Bearer', (done) => {
+  test('Returns a 401 when "Authorization" header is not a Bearer', () => {return new Promise((done) => {
 
     const req = createRequestMock({
       headers: {
-        'authorization': `ham`
-      }
+        'authorization': `ham`,
+      },
     });
     const res = createResponseMock({
       send(message) {
@@ -171,7 +171,7 @@ describe('Does not allow unauthorized requests through', () => {
       status(statusCode) {
         expect(statusCode).toBe(401);
         return this;
-      }
+      },
     });
 
     const fn = jest.fn();
@@ -183,7 +183,7 @@ describe('Does not allow unauthorized requests through', () => {
     expect(fn).not.toHaveBeenCalled();
 
     done();
-  });
+  })});
 
 });
 
@@ -194,7 +194,7 @@ describe('Correctly restricts roles', () => {
 
   beforeEach(() => {
     jest.resetModules();
-    process.env = { ...ORIGINAL_ENV }
+    process.env = { ...ORIGINAL_ENV, }
     process.env.ACCESS_TOKEN_SECRET = TESTING_SECRET;
   });
 
@@ -202,86 +202,86 @@ describe('Correctly restricts roles', () => {
     process.env = ORIGINAL_ENV;
   });
 
-  test('Allows requests when "roles" is present', (done) => {
+  test('Allows requests when "roles" is present', () => {return new Promise((done) => {
     const t = generateWorkingToken({
       id: '1234',
       username: 'test-user',
-      permissions: ['TESTING'],
+      permissions: ['TESTING',],
     });
 
     const req = createRequestMock({
       headers: {
-        'authorization': `Bearer ${t}`
+        'authorization': `Bearer ${t}`,
       },
     });
     const res = createResponseMock({
       locals: {
         x: 1,
-      }
+      },
     });
 
     const fn = jest.fn();
     const next = createNextMock(fn);
 
-    const middleware = createTokenAuthMiddleware({ roles: ['TESTING'] });
+    const middleware = createTokenAuthMiddleware({ allowRoles: ['TESTING',], });
     middleware(req, res, next);
 
     expect(fn).toHaveBeenCalled();
     expect(res.locals.id).toBe('1234');
     expect(res.locals.username).toBe('test-user');
-    expect(res.locals.permissions).toEqual(['TESTING']);
+    expect(res.locals.permissions).toEqual(['TESTING',]);
 
     expect(res.locals.x).toBe(1);
 
     done();
-  });
+  })});
 
-  test('Does not filter when "roles" is empty array', (done) => {
+  test('Does not filter when "roles" is empty array', () => {return new Promise((done) => {
     const t = generateWorkingToken({
       id: '1234',
       username: 'test-user',
-      permissions: ['TESTING'],
+      permissions: ['TESTING',],
     });
 
     const req = createRequestMock({
       headers: {
-        'authorization': `Bearer ${t}`
+        'authorization': `Bearer ${t}`,
       },
     });
     const res = createResponseMock({
       locals: {
         x: 1,
-      }
+      },
     });
 
     const fn = jest.fn();
     const next = createNextMock(fn);
 
-    const middleware = createTokenAuthMiddleware({ roles: [] });
+    const middleware = createTokenAuthMiddleware({ allowRoles: [], });
     middleware(req, res, next);
 
     expect(fn).toHaveBeenCalled();
     expect(res.locals.id).toBe('1234');
     expect(res.locals.username).toBe('test-user');
-    expect(res.locals.permissions).toEqual(['TESTING']);
+    expect(res.locals.permissions).toEqual(['TESTING',]);
 
     expect(res.locals.x).toBe(1);
 
     done();
-  });
+  })});
 
 
 
-  test('Denies requests when "roles" is not present', (done) => {
+  test('Denies requests when "roles" is not present', () => {return new Promise((done) => {
     const t = generateWorkingToken({
       id: '1234',
       username: 'test-user',
-      permissions: [ 'TESTING' ],
+      permissions: [ 'TESTING', ],
     });
 
     const req = createRequestMock({
       headers: {
-        'authorization': `Bearer ${t}`
+        'authorization': `Bearer ${t}`,
       },
     });
     const res = createResponseMock({
@@ -292,99 +292,99 @@ describe('Correctly restricts roles', () => {
       status(statusCode) {
         expect(statusCode).toBe(401);
         return this;
-      }
+      },
     });
 
     const fn = jest.fn();
     const next = createNextMock(fn);
 
     // only allow admins
-    const middleware = createTokenAuthMiddleware({ roles: [ 'ADMIN' ] });
+    const middleware = createTokenAuthMiddleware({ allowRoles: [ 'ADMIN', ], });
     middleware(req, res, next);
 
     expect(fn).not.toHaveBeenCalled();
 
     done();
-  });
+  })});
 
-  test('Allows requests when role is not in "denyRoles"', (done) => {
+  test('Allows requests when role is not in "denyRoles"', () => {return new Promise((done) => {
     const t = generateWorkingToken({
       id: '1234',
       username: 'test-user',
-      permissions: [ 'TESTING' ],
+      permissions: [ 'TESTING', ],
     });
 
     const req = createRequestMock({
       headers: {
-        'authorization': `Bearer ${t}`
+        'authorization': `Bearer ${t}`,
       },
     });
     const res = createResponseMock({
       locals: {
         x: 1,
-      }
+      },
     });
 
     const fn = jest.fn();
     const next = createNextMock(fn);
 
-    const middleware = createTokenAuthMiddleware({ denyRoles: ['USER'] });
+    const middleware = createTokenAuthMiddleware({ denyRoles: ['USER',], });
     middleware(req, res, next);
 
     expect(fn).toHaveBeenCalled();
     expect(res.locals.id).toBe('1234');
     expect(res.locals.username).toBe('test-user');
-    expect(res.locals.permissions).toEqual(['TESTING']);
+    expect(res.locals.permissions).toEqual(['TESTING',]);
 
     expect(res.locals.x).toBe(1);
 
     done();
-  });
+  })});
 
-  test('Does not filter when "denyRoles" is empty array', (done) => {
+  test('Does not filter when "denyRoles" is empty array', () => {return new Promise((done) => {
     const t = generateWorkingToken({
       id: '1234',
       username: 'test-user',
-      permissions: ['TESTING'],
+      permissions: ['TESTING',],
     });
 
     const req = createRequestMock({
       headers: {
-        'authorization': `Bearer ${t}`
+        'authorization': `Bearer ${t}`,
       },
     });
     const res = createResponseMock({
       locals: {
         x: 1,
-      }
+      },
     });
 
     const fn = jest.fn();
     const next = createNextMock(fn);
 
-    const middleware = createTokenAuthMiddleware({ denyRoles: [] });
+    const middleware = createTokenAuthMiddleware({ denyRoles: [], });
     middleware(req, res, next);
 
     expect(fn).toHaveBeenCalled();
     expect(res.locals.id).toBe('1234');
     expect(res.locals.username).toBe('test-user');
-    expect(res.locals.permissions).toEqual(['TESTING']);
+    expect(res.locals.permissions).toEqual(['TESTING',]);
 
     expect(res.locals.x).toBe(1);
 
     done();
-  });
+  })});
 
-  test('Denies requests when role is not present', (done) => {
+  test('Denies requests when role is not present', () => {return new Promise((done) => {
     const t = generateWorkingToken({
       id: '1234',
       username: 'test-user',
-      permissions: [ 'TESTING', 'USER' ],
+      permissions: [ 'TESTING', 'USER', ],
     });
 
     const req = createRequestMock({
       headers: {
-        'authorization': `Bearer ${t}`
+        'authorization': `Bearer ${t}`,
       },
     });
     const res = createResponseMock({
@@ -395,18 +395,18 @@ describe('Correctly restricts roles', () => {
       status(statusCode) {
         expect(statusCode).toBe(401);
         return this;
-      }
+      },
     });
 
     const fn = jest.fn();
     const next = createNextMock(fn);
 
     // only allow admins
-    const middleware = createTokenAuthMiddleware({ denyRoles: ['USER'] });
+    const middleware = createTokenAuthMiddleware({ denyRoles: ['USER',], });
     middleware(req, res, next);
 
     expect(fn).not.toHaveBeenCalled();
 
     done();
-  });
+  })});
 });
