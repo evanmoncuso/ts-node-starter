@@ -1,0 +1,1 @@
+export { createTokenAuthMiddleware } from './authenticate';

@@ -1,42 +1,45 @@
 {
-  "name": "ts-starter",
-  "version": "1.0.0",
+  "name": "@evanmoncuso/token-auth-middleware",
+  "version": "0.3.1",
   "description": "A Typescript starter pack for node projects",
-  "main": "index.js",
   "author": "Evan Moncuso",
   "license": "MIT",
+  "files": [
+    "lib/**/*"
+  ],
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
   "keywords": [
+    "express",
+    "middleware",
     "node",
-    "typescript",
-    "express"
+    "typescript"
   ],
   "scripts": {
     "build": "tsc",
-    "build:dev": "tsc -w",
-    "develop": "source .private/local.sh && concurrently \"yarn run build:dev\" \"yarn run start:dev\"",
-    "start": "node app.js",
-    "start:dev": "nodemon dist/app.js",
+    "prepublishOnly": "yarn test",
+    "prepare": "yarn build",
     "test": "yarn run test:lint && yarn run test:jest",
     "test:jest": "jest",
-    "test:lint": "tslint -c tslint.json 'src/**/*.ts'"
+    "test:lint": "eslint . --ext .js,.ts"
   },
   "dependencies": {
-    "body-parser": "^1.19.0",
-    "cors": "^2.8.5",
-    "express": "^4.17.1"
+    "jsonwebtoken": "^8.5.1"
   },
   "devDependencies": {
     "@babel/core": "^7.9.0",
     "@babel/preset-env": "^7.9.0",
     "@babel/preset-typescript": "^7.9.0",
-    "@types/body-parser": "~1.19.0",
-    "@types/cors": "~2.8.6",
-    "@types/express": "~4.17.3",
+    "@types/express": "^4.17.6",
     "@types/jest": "^25.1.4",
+    "@types/jsonwebtoken": "^8.3.9",
     "@types/node": "~13.9.0",
-    "concurrently": "^5.1.0",
+    "@typescript-eslint/eslint-plugin": "^2.29.0",
+    "@typescript-eslint/parser": "^2.29.0",
+    "eslint": "^6.8.0",
+    "eslint-plugin-jest": "^23.8.2",
+    "express": "^4.17.1",
     "jest": "^25.2.4",
-    "nodemon": "~2.0.2",
     "tslint": "^6.1.0",
     "typescript": "^3.8.3"
   },

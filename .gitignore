@@ -1,10 +1,7 @@
 # build 
 node_modules
-dist
+lib
 yarn-error.log
-
-# runtime
-.private
 
 # misc
 .DS_Store

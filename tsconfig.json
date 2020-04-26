@@ -1,18 +1,20 @@
 {
   "compilerOptions": {
     "lib": [
-      "es2020"
+      "es2015"
     ],
     "moduleResolution": "node",
     "allowJs": true,
     "module": "commonjs",
-    "outDir": "dist",
+    "outDir": "./lib",
+    "declaration": true,
     "sourceMap": true,
     "strict": true,
-    "target": "es2019"
+    "target": "es2020"
   },
   "exclude": [
     "node_modules",
+    "**/__tests__/*",
     "**/*.spec.ts"
   ],
   "include": [
