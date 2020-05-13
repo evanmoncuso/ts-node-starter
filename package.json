@@ -38,7 +38,7 @@
     "jest": "^25.2.4",
     "nodemon": "~2.0.2",
     "tslint": "^6.1.0",
-    "typescript": "^3.8.3"
+    "typescript": "^3.9.2"
   },
   "engines": {
     "node": ">=10.16.x"
